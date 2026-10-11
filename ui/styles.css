@@ -32,6 +32,7 @@ html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.
 .btn.danger { background: var(--bad); color: #1a0505; }
 .btn.small { padding: 3px 8px; font-size: 11px; }
 .btn:disabled { opacity: 0.5; cursor: default; }
+.btn.ghost.armed { border-color: var(--bad); color: var(--bad); }
 .layout { display: grid; grid-template-columns: 330px minmax(420px, 1fr) minmax(480px, 1.2fr); gap: 12px; padding: 12px; min-height: calc(100vh - 56px); }
 .col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }

@@ -40,7 +40,7 @@ Source layout mirrors the architecture: `src/edge-gateway`, `src/agent-runtime`,
 | Audit Plane outage | MCP | Read proceeds with a buffered event and an audit.gap; execute is blocked (fail-closed); buffer replays on recovery |
 | Insider edits the archive | Admin | Checkpoint, verify clean, edit a record on disk, verify reports the broken link and Merkle root |
 
-In the UI, untick **auto-approve** to decide approvals yourself in the Pending approvals panel.
+In the UI, **auto-approve** is on by default; untick it to decide approvals yourself in the Pending approvals panel. **Reset demo** (two clicks) wipes the audit archive and the run console and rejects anything still waiting for approval, so you can start a clean walkthrough without restarting the process.
 
 ## The record
 
@@ -52,5 +52,5 @@ Integrity controls implemented here: producer signatures verified at ingest; per
 
 - The MCP endpoint is `/mcp-server`. On this development machine an endpoint-security product (Avast Web Shield) rewrites loopback HTTP responses for requests whose path ends in `/mcp` or that carry the `mcp-protocol-version` or `mcp-session-id` headers, breaking chunked framing. EP1 does not forward those headers to EP4, and the scenario client strips them through a custom fetch. On machines without that interception none of this matters.
 - `data/` is wiped on each `npm run demo` unless you pass `--keep`. The demo checks that all six ports are free before it touches `data/`, so starting a second copy while one is running exits with a message instead of wiping the running demo's archive.
-- **Verify chain** labels every finding with its cause. Findings from the **Tamper archive** control (or the tamper scenario) are marked *expected*: the edit stays on disk, so verification keeps failing until the demo is restarted, which is the point. A finding marked *investigate* is not explained by the demo; the usual cause is an archive whose first records are missing from disk, which the panel reports as "archive on disk starts at seq N".
+- **Verify chain** labels every finding with its cause. Findings from the **Tamper archive** control (or the tamper scenario) are marked *expected*: the edit stays on disk, so verification keeps failing until the demo is reset or restarted, which is the point. A finding marked *investigate* is not explained by the demo; the usual cause is an archive whose first records are missing from disk, which the panel reports as "archive on disk starts at seq N".
 - This is a POC: keys live in memory, the archive is a local file, and the timestamp authority is simulated. The structure, event schema and control flow are what the standard specifies.

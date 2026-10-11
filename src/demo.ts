@@ -20,7 +20,7 @@ import { startToolGateway } from "./tool-gateway/server.js";
 type Run = { run_id: string; scenario: string; title: string; status: "running" | "done" | "failed"; started_at: string; finished_at?: string; log: string[]; interaction_id?: string; summary?: string };
 const runs: Run[] = [];
 
-function mountDemo(app: Express) {
+function mountDemo(app: Express, store: AuditStore, tools: ToolGateway) {
   app.get("/demo/scenarios", (_req, res) => res.json(SCENARIOS.map(({ id, title, surface, description }) => ({ id, title, surface, description }))));
   app.get("/demo/runs", (_req, res) => res.json(runs.slice(-30).reverse()));
   app.post("/demo/scenarios/:id/run", (req, res) => {
@@ -43,6 +43,19 @@ function mountDemo(app: Express) {
       })
       .finally(() => (run.finished_at = nowIso()));
     res.json(run);
+  });
+  /**
+   * Reset the demo without restarting: reject anything still waiting for a human, clear the
+   * run console and start a fresh audit archive. Systems of record (customers, accounts,
+   * orders, transfers) and producer keys are left alone.
+   */
+  app.post("/demo/reset", async (_req, res) => {
+    const pending = tools.listApprovals("pending");
+    for (const a of pending) await tools.decide(a.approval_id, "rejected", "demo-reset", "rejected because the demo was reset");
+    if (pending.length) await new Promise((r) => setTimeout(r, 1500)); // let the waiting scenarios finish writing
+    const runsCleared = runs.length;
+    runs.length = 0;
+    res.json({ ok: true, ...store.reset(), runs_cleared: runsCleared, approvals_rejected: pending.length });
   });
 }
 
@@ -67,9 +80,10 @@ async function assertPortsFree(ports: Record<string, number>): Promise<void> {
 
 await assertPortsFree(PORTS);
 const store = new AuditStore(!process.argv.includes("--keep"));
-startAuditPlane(store, mountDemo);
+const tools = new ToolGateway();
+startAuditPlane(store, (app) => mountDemo(app, store, tools));
 startCoreApis();
-startToolGateway(new ToolGateway());
+startToolGateway(tools);
 startModelGateway();
 startAgentRuntime(new AgentRuntime());
 startEdgeGateway();

@@ -60,6 +60,7 @@ export function createAuditApp(store: AuditStore): Express {
     res.json({ outage: store.outage });
   });
   app.post("/admin/tamper", (req, res) => res.json(store.tamper(req.body?.event_id)));
+  app.post("/admin/reset", (_req, res) => res.json(store.reset()));
 
   // periodic checkpoints (the Merkle batch + signature + anchor cadence)
   setInterval(() => store.checkpointAll(), CHECKPOINT_INTERVAL_MS).unref();

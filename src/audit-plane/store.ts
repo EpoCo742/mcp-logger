@@ -89,6 +89,27 @@ export class AuditStore {
     mkdirSync(ARCHIVE_DIR, { recursive: true });
   }
 
+  /**
+   * Demo control: start a fresh archive without restarting the process. Wipes data/ and every
+   * in-memory index, forgets simulated tampering and outages. Producer keys are kept so the
+   * enforcement points keep working without re-registering.
+   */
+  reset(): { reset_at: string } {
+    if (existsSync(DATA_DIR)) rmSync(DATA_DIR, { recursive: true, force: true });
+    mkdirSync(ARCHIVE_DIR, { recursive: true });
+    this.streams.clear();
+    this.hot = [];
+    this.byInteraction.clear();
+    this.byEventId.clear();
+    this.accessLog = [];
+    this.tampered.length = 0;
+    this.rejections.length = 0;
+    this.ingestedTotal.accepted = 0;
+    this.ingestedTotal.rejected = 0;
+    this.outage = false;
+    return { reset_at: nowIso() };
+  }
+
   registerKey(keyId: string, publicPem: string, point: string) {
     this.producerKeys.set(keyId, { public_pem: publicPem, point });
   }
@@ -359,7 +380,7 @@ export class AuditStore {
         const byRange = from_seq !== undefined && to_seq !== undefined ? tamperedHere.find((t) => t.seq >= from_seq && t.seq <= to_seq) : undefined;
         if (byRange) return { ...p, expected: true, cause: tamperCause(byRange) };
         if (truncatedBefore !== null && ((p.kind === "chain_break" && p.seq === truncatedBefore) || (p.kind === "checkpoint_chain_break" && p.checkpoint_id === firstCheckpointId)))
-          return { ...p, expected: false, cause: `archive truncated: records 1-${truncatedBefore - 1} are missing from disk (data/ was removed while the Audit Plane was running); restart the demo to start a fresh archive` };
+          return { ...p, expected: false, cause: `archive truncated: records 1-${truncatedBefore - 1} are missing from disk (data/ was removed while the Audit Plane was running); press Reset demo (or restart) to start a fresh archive` };
         return { ...p, expected: false, cause: "unexplained: investigate" };
       });
       results.push({ stream_id: streamId, ok: attributed.length === 0, events, checkpoints, anchored_through_seq: anchoredThrough, first_seq_on_disk: firstSeq, truncated_before_seq: truncatedBefore, problems: attributed });

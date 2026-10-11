@@ -12,6 +12,7 @@ const get = (u) => fetch(u).then((r) => r.json());
 const post = (u, body) => fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body ?? {}) }).then((r) => r.json());
 
 const state = { selected: null, detail: null, lastRunCount: 0, openEvents: new Set() };
+const PLACEHOLDERS = { detail: $("#detail-body").innerHTML, integrity: $("#integrity").innerHTML };
 
 // ---------- scenarios ----------
 async function loadScenarios() {
@@ -205,7 +206,7 @@ async function verify() {
   const sum = r.summary ?? { problems: 0, expected: 0, unexpected: 0 };
   let headline;
   if (r.ok) headline = "All streams verify: every entry hash recomputes, every checkpoint root, signature and anchor token check out.";
-  else if (sum.unexpected === 0) headline = `VERIFICATION FAILED as expected: ${sum.expected} finding(s), all caused by the simulated insider edit (Tamper archive). The archive is tamper-evident. Restart the demo to start a clean archive.`;
+  else if (sum.unexpected === 0) headline = `VERIFICATION FAILED as expected: ${sum.expected} finding(s), all caused by the simulated insider edit (Tamper archive). The archive is tamper-evident. Press Reset demo to start a clean archive.`;
   else headline = `VERIFICATION FAILED: ${sum.unexpected} finding(s) are not explained by the tamper demo and need investigation${sum.expected ? ` (${sum.expected} more come from the simulated insider edit)` : ""}.`;
   $("#integrity").innerHTML =
     `<div class="notice ${r.ok ? "good" : sum.unexpected === 0 ? "warn" : "bad"}">${headline} <span class="muted">(${t(r.verified_at)})</span></div>` +
@@ -225,6 +226,37 @@ $("#btn-checkpoint").onclick = async () => {
 $("#btn-tamper").onclick = async () => {
   const r = await post(`${AUDIT}/admin/tamper`);
   $("#integrity").innerHTML = `<div class="notice bad">Insider edit simulated on disk: ${esc(r.detail)}. Now press Verify chain.</div>` + $("#integrity").innerHTML;
+};
+// Reset needs two clicks within a few seconds so a stray click cannot wipe the demo.
+let resetArmed = null;
+$("#btn-reset").onclick = async () => {
+  const b = $("#btn-reset");
+  if (!resetArmed) {
+    b.textContent = "Click again to reset";
+    b.classList.add("armed");
+    resetArmed = setTimeout(() => {
+      resetArmed = null;
+      b.textContent = "Reset demo";
+      b.classList.remove("armed");
+    }, 4000);
+    return;
+  }
+  clearTimeout(resetArmed);
+  resetArmed = null;
+  b.disabled = true;
+  b.textContent = "Resetting…";
+  const r = await post(`${AUDIT}/demo/reset`);
+  Object.assign(state, { selected: null, detail: null, lastRunCount: 0, openEvents: new Set() });
+  $("#console").textContent = "";
+  $("#detail-body").innerHTML = PLACEHOLDERS.detail;
+  $("#integrity").innerHTML = `<div class="notice good">Demo reset at ${t(r.reset_at)}: audit archive wiped, ${r.runs_cleared} run(s) cleared, ${r.approvals_rejected} pending approval(s) rejected. Producer keys and the systems of record were kept.</div>${PLACEHOLDERS.integrity}`;
+  b.disabled = false;
+  b.textContent = "Reset demo";
+  b.classList.remove("armed");
+  refreshStatus();
+  refreshInteractions();
+  refreshApprovals();
+  refreshRuns();
 };
 $("#btn-outage").onclick = async () => {
   const s = await get(`${AUDIT}/admin/status`);
