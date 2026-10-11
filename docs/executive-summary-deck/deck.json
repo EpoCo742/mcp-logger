@@ -1,0 +1,19 @@
+{
+  "v": 4,
+  "createdOnFiles": {"v": 1, "at": "2026-10-11T18:00:00Z"},
+  "lists": "css",
+  "title": "AI Audit Logging Executive Summary",
+  "order": ["cover","why-now","risks","rules","principle","where","what-each","record","grounding","actions","tamper","privacy","poc","path","decisions","glossary"],
+  "sections": {
+    "intro": {"description": "Why audit logging for AI needs an executive decision now.", "start": "cover"},
+    "standard": {"description": "The standard: one record per interaction, where it is captured and what it holds.", "start": "principle"},
+    "controls": {"description": "Proof of source, human approval for actions, tamper evidence, privacy and retention.", "start": "grounding"},
+    "poc": {"description": "What the proof of concept demonstrated and how teams adopt it.", "start": "poc"},
+    "decide": {"description": "Decisions requested and a plain-language glossary.", "start": "decisions"}
+  },
+  "faces": {
+    "source-serif-4": {"family": "Source Serif 4", "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap"},
+    "ibm-plex-sans": {"family": "IBM Plex Sans", "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"}
+  },
+  "designSystems": []
+}

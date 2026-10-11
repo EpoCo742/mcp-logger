@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Audit Plane</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">AI</span>
+      <div>
+        <div class="title">AI Audit Plane</div>
+        <div class="sub">Third-party AI audit logging POC · investment advisor platform</div>
+      </div>
+    </div>
+    <div class="status">
+      <span id="provider" class="chip">provider: …</span>
+      <span id="streams" class="chip">streams: …</span>
+      <span id="outage" class="chip">ingest: up</span>
+      <button id="btn-outage" class="btn ghost">Simulate outage</button>
+      <button id="btn-checkpoint" class="btn ghost">Checkpoint now</button>
+      <button id="btn-verify" class="btn">Verify chain</button>
+      <button id="btn-tamper" class="btn danger">Tamper archive</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="col left">
+      <section class="panel">
+        <h2>Scenarios</h2>
+        <label class="toggle"><input type="checkbox" id="auto-approve" /> auto-approve (otherwise approve below)</label>
+        <ul id="scenarios" class="scenarios"></ul>
+      </section>
+      <section class="panel">
+        <h2>Pending approvals <span id="approval-count" class="count">0</span></h2>
+        <div id="approvals" class="approvals"></div>
+      </section>
+      <section class="panel">
+        <h2>Run console</h2>
+        <pre id="console" class="console"></pre>
+      </section>
+    </aside>
+
+    <section class="col middle">
+      <section class="panel">
+        <h2>Interactions <span id="interaction-count" class="count">0</span></h2>
+        <table class="table" id="interactions">
+          <thead><tr><th>When</th><th>Surface</th><th>Consumer</th><th>Operator</th><th>Principal</th><th>Request</th><th>Outcome</th><th>Steps</th><th>Flags</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <section class="panel" id="integrity-panel">
+        <h2>Integrity</h2>
+        <div id="integrity" class="integrity"><span class="muted">Run “Verify chain” to walk every archive stream, recompute the hash chain and check each signed, anchored checkpoint.</span></div>
+      </section>
+    </section>
+
+    <section class="col right">
+      <section class="panel" id="detail">
+        <h2>Interaction detail</h2>
+        <div id="detail-body"><span class="muted">Select an interaction to replay it: identity chain, every step, the context the model saw, tool policy decisions, provenance stamps and the grounding map.</span></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

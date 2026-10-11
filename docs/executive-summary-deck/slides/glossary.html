@@ -1,0 +1,21 @@
+<section id="glossary" data-transition="fade" style="background:#F7F6F1;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;color:#1F7A8C;letter-spacing:2px;text-transform:uppercase">Appendix</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1">Plain-language glossary</h2>
+</div>
+<table style="font-size:24px;line-height:1.35;color:#3D4A5C;border:1px solid #D7DEE4;padding:13px 18px;background:#FDFCF9">
+<tr style="background:#14213D"><th style="width:26%;text-align:left;color:#F7F6F1">Term</th><th style="width:74%;text-align:left;color:#F7F6F1">What it means here</th></tr>
+<tr><td style="color:#14213D;font-weight:600">Agent</td><td>Software that uses an AI model to decide which steps to take, then takes them</td></tr>
+<tr style="background:#EFF2F4"><td style="color:#14213D;font-weight:600">MCP</td><td>Model Context Protocol: a standard way for an outside AI agent to call our tools</td></tr>
+<tr><td style="color:#14213D;font-weight:600">Enforcement point</td><td>A shared gateway every AI call must pass; it applies policy and writes the record</td></tr>
+<tr style="background:#EFF2F4"><td style="color:#14213D;font-weight:600">Provenance stamp</td><td>A tag on each returned value: which system, which record, when, and a fingerprint</td></tr>
+<tr><td style="color:#14213D;font-weight:600">Grounding</td><td>Linking each sentence of an answer to the stamped values it relied on</td></tr>
+<tr style="background:#EFF2F4"><td style="color:#14213D;font-weight:600">Hash chain</td><td>Each record carries the fingerprint of the previous one, so edits break the chain</td></tr>
+<tr><td style="color:#14213D;font-weight:600">Checkpoint</td><td>A signed, independently timestamped summary of all records up to that moment</td></tr>
+<tr style="background:#EFF2F4"><td style="color:#14213D;font-weight:600">Fail closed</td><td>If the record cannot be written, the action does not happen</td></tr>
+<tr><td style="color:#14213D;font-weight:600">Tokenisation</td><td>Replacing a sensitive value with a stand-in; the original is kept in a sealed vault</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#6B7785">AI audit logging · Executive summary</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;text-align:right;font-size:24px;color:#6B7785">16</p>
+<aside>Keep this slide for the question-and-answer session. The full architecture document and the runnable proof of concept are available for anyone who wants the technical detail.</aside>
+</section>

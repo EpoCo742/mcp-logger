@@ -1,0 +1,32 @@
+<section id="actions" data-transition="fade" style="background:#F7F6F1;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;color:#1F7A8C;letter-spacing:2px;text-transform:uppercase">Actions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1">Reading is not acting</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FDFCF9;padding:32px;border:1px solid #D7DEE4;border-radius:16px">
+<p style="font-size:24px;font-weight:600;color:#1F7A8C">Read</p>
+<h3 style="font-size:30px;font-weight:600;line-height:1.2">Profiles, balances, positions, history</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Allowed when policy passes: the firm is verified, the client is in the caller's scope, the tool is enabled for that channel. Every value returned is stamped.</p>
+<p style="font-size:24px;line-height:1.4;color:#5B6978">If the audit service is down, the read proceeds, is buffered, and a gap is recorded and alarmed.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FDFCF9;padding:32px;border:1px solid #D7DEE4;border-radius:16px">
+<p style="font-size:24px;font-weight:600;color:#1F7A8C">Propose</p>
+<h3 style="font-size:30px;font-weight:600;line-height:1.2">Preview a trade, draft a transfer</h3>
+<p style="font-size:24px;line-height:1.4;color:#3D4A5C">Nothing changes in our systems, but the proposal is advice. It is written to the record durably before it is shown to anyone.</p>
+<p style="font-size:24px;line-height:1.4;color:#5B6978">If the record cannot be written, the proposal is not shown.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#14213D;padding:32px;border-radius:16px">
+<p style="font-size:24px;font-weight:600;color:#7FC4D0">Execute</p>
+<h3 style="font-size:30px;font-weight:600;line-height:1.2;color:#F7F6F1">Place a trade, move money</h3>
+<p style="font-size:24px;line-height:1.4;color:#BFCBD9">A named person must approve the exact action, seeing the same summary the system will execute. The approval is bound to those parameters and can be used once.</p>
+<p style="font-size:24px;line-height:1.4;color:#BFCBD9">The authorisation is written to the record before anything happens. If it cannot be written, the action is blocked.</p>
+</div>
+</div>
+<div style="background:#E9EEF1;padding:24px 40px;border-radius:12px;border:1px solid #D7DEE4">
+<p style="font-size:28px;line-height:1.4;color:#14213D"><b>Fail closed for actions, fail open with an alarm for reads.</b> A model can never move money on the strength of a record that was not kept.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#6B7785">AI audit logging · Executive summary</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;text-align:right;font-size:24px;color:#6B7785">10</p>
+<aside>Three action classes. The approval token is tied to a fingerprint of the arguments, so a model cannot get approval for one trade and use it for another. The proof of concept shows the money-movement case end to end, including an approval decided by a person in the demo interface.</aside>
+</section>

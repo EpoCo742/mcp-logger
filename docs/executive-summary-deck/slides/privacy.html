@@ -1,0 +1,30 @@
+<section id="privacy" data-transition="fade" style="background:#F7F6F1;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;color:#1F7A8C;letter-spacing:2px;text-transform:uppercase">Privacy and retention</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;line-height:1.1">Complete records without a second copy of client data</h2>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FDFCF9;padding:36px;border:1px solid #D7DEE4;border-radius:16px">
+<x-icon name="Key" style="width:40px;height:40px;color:#1F7A8C"></x-icon>
+<h3 style="font-size:32px;font-weight:600;line-height:1.2">Regulated fields are masked</h3>
+<ul style="font-size:26px;line-height:1.45;color:#3D4A5C;padding:0 0 0 28px">
+<li>Social security numbers, dates of birth, emails and phone numbers are replaced by consistent tokens as records arrive.</li>
+<li>The same value always gets the same token, so investigators can still follow a thread.</li>
+<li>Originals go into an encrypted vault. Revealing one needs two approvers, and the reveal is itself a record.</li>
+</ul>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FDFCF9;padding:36px;border:1px solid #D7DEE4;border-radius:16px">
+<x-icon name="Clock" style="width:40px;height:40px;color:#1F7A8C"></x-icon>
+<h3 style="font-size:32px;font-weight:600;line-height:1.2">Kept as long as the business record</h3>
+<ul style="font-size:26px;line-height:1.45;color:#3D4A5C;padding:0 0 0 28px">
+<li>Each interaction gets a retention class at the point of entry: transactional, advisory or informational.</li>
+<li>A record of a trade or transfer is kept as long as the trade record itself, under the existing books-and-records schedule.</li>
+<li>Informational interactions are kept for [N years]. Legal holds freeze any class.</li>
+<li>A regulator receives an export package with proofs they can verify offline.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#6B7785">AI audit logging · Executive summary</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;text-align:right;font-size:24px;color:#6B7785">12</p>
+<aside>Two concerns leadership tends to raise: does the audit log become a new honeypot of client data, and how long are we on the hook. Masking at ingest with a dual-control vault answers the first; retention classes tied to the existing schedule answer the second. The number of years for informational records is a Compliance decision.</aside>
+</section>
