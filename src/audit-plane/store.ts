@@ -75,6 +75,8 @@ export class AuditStore {
   outage = false;
   readonly ingestedTotal = { accepted: 0, rejected: 0 };
   readonly rejections: { at: string; error: string; event_type?: string; key_id?: string }[] = [];
+  /** Simulated insider edits made through the demo's tamper control, so verification can label them as expected. */
+  readonly tampered: { event_id: string; stream_id: string; seq: number; at: string; detail: string }[] = [];
 
   private streams = new Map<string, StreamState>();
   private hot: StoredEvent[] = [];
@@ -301,12 +303,14 @@ export class AuditStore {
       events: number;
       checkpoints: number;
       anchored_through_seq: number;
-      problems: { seq?: number; event_id?: string; checkpoint_id?: string; kind: string; detail: string }[];
+      first_seq_on_disk: number | null;
+      truncated_before_seq: number | null;
+      problems: { seq?: number; event_id?: string; checkpoint_id?: string; kind: string; detail: string; expected: boolean; cause: string }[];
     }[];
     for (const file of readdirSync(ARCHIVE_DIR)) {
       const streamIdGuess = file.replace(/\.jsonl$/, "");
       const records = this.readArchive(streamIdGuess);
-      const problems: (typeof results)[number]["problems"] = [];
+      const problems: { seq?: number; event_id?: string; checkpoint_id?: string; kind: string; detail: string; from_seq?: number; to_seq?: number }[] = [];
       let prev = GENESIS;
       let prevRoot = GENESIS;
       let leaves: string[] = [];
@@ -314,9 +318,12 @@ export class AuditStore {
       let streamId = streamIdGuess;
       let events = 0;
       let checkpoints = 0;
+      let firstSeq: number | null = null;
+      let firstCheckpointId: string | null = null;
       for (const rec of records) {
         if (rec.record === "event") {
           events++;
+          firstSeq ??= rec.seq ?? null;
           streamId = rec.stream_id ?? streamId;
           const storedHash = hashOf(rec.payload);
           if (storedHash !== rec.stored_payload_hash) problems.push({ seq: rec.seq, event_id: rec.event_id, kind: "payload_modified", detail: `stored payload hash ${storedHash.slice(0, 12)} != recorded ${rec.stored_payload_hash.slice(0, 12)}` });
@@ -327,8 +334,9 @@ export class AuditStore {
           leaves.push(expect); // recomputed, so a modified record also breaks the Merkle root
         } else {
           checkpoints++;
+          firstCheckpointId ??= rec.checkpoint_id;
           const root = merkleRoot(leaves);
-          if (root !== rec.root) problems.push({ checkpoint_id: rec.checkpoint_id, kind: "merkle_root_mismatch", detail: `recomputed root over seq ${rec.from_seq}-${rec.to_seq} differs from signed root` });
+          if (root !== rec.root) problems.push({ checkpoint_id: rec.checkpoint_id, kind: "merkle_root_mismatch", detail: `recomputed root over seq ${rec.from_seq}-${rec.to_seq} differs from signed root`, from_seq: rec.from_seq, to_seq: rec.to_seq });
           const body = `${rec.stream_id}|${rec.from_seq}|${rec.to_seq}|${rec.root}|${rec.prev_root}`;
           if (!verifyHex(this.auditKey.publicPem, body, rec.signature.sig)) problems.push({ checkpoint_id: rec.checkpoint_id, kind: "checkpoint_signature_invalid", detail: "audit plane signature does not verify" });
           if (!verifyHex(this.tsaKey.publicPem, `${rec.root}|${rec.anchor.timestamp}`, rec.anchor.token)) problems.push({ checkpoint_id: rec.checkpoint_id, kind: "anchor_invalid", detail: "timestamp authority token does not verify" });
@@ -338,9 +346,32 @@ export class AuditStore {
           leaves = [];
         }
       }
-      results.push({ stream_id: streamId, ok: problems.length === 0, events, checkpoints, anchored_through_seq: anchoredThrough, problems });
+      // Attribute every finding. A simulated insider edit (the demo's tamper control) is an expected
+      // finding: the point of the exercise is that it is detected. A chain that starts above seq 1 means
+      // the archive lost its head on disk (data/ removed while the Audit Plane kept running): records
+      // before that point are missing, which is a real integrity failure and is labelled as such.
+      const truncatedBefore = firstSeq !== null && firstSeq > 1 ? firstSeq : null;
+      const tamperedHere = this.tampered.filter((t) => t.stream_id === streamId);
+      const tamperCause = (t: { event_id: string; at: string }) => `expected: simulated insider edit of ${t.event_id} via the demo's tamper control at ${t.at}`;
+      const attributed = problems.map(({ from_seq, to_seq, ...p }) => {
+        const byEvent = p.event_id ? tamperedHere.find((t) => t.event_id === p.event_id) : undefined;
+        if (byEvent) return { ...p, expected: true, cause: tamperCause(byEvent) };
+        const byRange = from_seq !== undefined && to_seq !== undefined ? tamperedHere.find((t) => t.seq >= from_seq && t.seq <= to_seq) : undefined;
+        if (byRange) return { ...p, expected: true, cause: tamperCause(byRange) };
+        if (truncatedBefore !== null && ((p.kind === "chain_break" && p.seq === truncatedBefore) || (p.kind === "checkpoint_chain_break" && p.checkpoint_id === firstCheckpointId)))
+          return { ...p, expected: false, cause: `archive truncated: records 1-${truncatedBefore - 1} are missing from disk (data/ was removed while the Audit Plane was running); restart the demo to start a fresh archive` };
+        return { ...p, expected: false, cause: "unexplained: investigate" };
+      });
+      results.push({ stream_id: streamId, ok: attributed.length === 0, events, checkpoints, anchored_through_seq: anchoredThrough, first_seq_on_disk: firstSeq, truncated_before_seq: truncatedBefore, problems: attributed });
     }
-    return { ok: results.every((r) => r.ok), verified_at: nowIso(), streams: results };
+    const all = results.flatMap((r) => r.problems);
+    const expected = all.filter((p) => p.expected).length;
+    return {
+      ok: results.every((r) => r.ok),
+      verified_at: nowIso(),
+      summary: { problems: all.length, expected, unexpected: all.length - expected, tampered_events: this.tampered.map((t) => t.event_id) },
+      streams: results,
+    };
   }
 
   /** Export an interaction with inclusion proofs so a third party can verify offline. */
@@ -426,7 +457,9 @@ export class AuditStore {
     if (change === "appended note") (rec.payload as Record<string, unknown>).__edited = "value changed after the fact";
     lines[idx] = JSON.stringify(rec);
     writeFileSync(path, lines.join("\n"));
-    return { ok: true, detail: `archive record for ${target.event_id} edited on disk: ${change}`, event_id: target.event_id, stream_id: target.stream_id };
+    const detail = `archive record for ${target.event_id} edited on disk: ${change}`;
+    this.tampered.push({ event_id: target.event_id, stream_id: target.stream_id!, seq: target.seq!, at: nowIso(), detail });
+    return { ok: true, detail, event_id: target.event_id, stream_id: target.stream_id };
   }
 
   status() {

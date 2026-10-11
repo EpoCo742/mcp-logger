@@ -51,5 +51,6 @@ Integrity controls implemented here: producer signatures verified at ingest; per
 ## Notes
 
 - The MCP endpoint is `/mcp-server`. On this development machine an endpoint-security product (Avast Web Shield) rewrites loopback HTTP responses for requests whose path ends in `/mcp` or that carry the `mcp-protocol-version` or `mcp-session-id` headers, breaking chunked framing. EP1 does not forward those headers to EP4, and the scenario client strips them through a custom fetch. On machines without that interception none of this matters.
-- `data/` is wiped on each `npm run demo` unless you pass `--keep`.
+- `data/` is wiped on each `npm run demo` unless you pass `--keep`. The demo checks that all six ports are free before it touches `data/`, so starting a second copy while one is running exits with a message instead of wiping the running demo's archive.
+- **Verify chain** labels every finding with its cause. Findings from the **Tamper archive** control (or the tamper scenario) are marked *expected*: the edit stays on disk, so verification keeps failing until the demo is restarted, which is the point. A finding marked *investigate* is not explained by the demo; the usual cause is an archive whose first records are missing from disk, which the panel reports as "archive on disk starts at seq N".
 - This is a POC: keys live in memory, the archive is a local file, and the timestamp authority is simulated. The structure, event schema and control flow are what the standard specifies.

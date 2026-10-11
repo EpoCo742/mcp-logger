@@ -202,9 +202,20 @@ $("#detail-body").addEventListener("click", async (e) => {
 // ---------- integrity & status ----------
 async function verify() {
   const r = await get(`${AUDIT}/verify`);
+  const sum = r.summary ?? { problems: 0, expected: 0, unexpected: 0 };
+  let headline;
+  if (r.ok) headline = "All streams verify: every entry hash recomputes, every checkpoint root, signature and anchor token check out.";
+  else if (sum.unexpected === 0) headline = `VERIFICATION FAILED as expected: ${sum.expected} finding(s), all caused by the simulated insider edit (Tamper archive). The archive is tamper-evident. Restart the demo to start a clean archive.`;
+  else headline = `VERIFICATION FAILED: ${sum.unexpected} finding(s) are not explained by the tamper demo and need investigation${sum.expected ? ` (${sum.expected} more come from the simulated insider edit)` : ""}.`;
   $("#integrity").innerHTML =
-    `<div class="notice ${r.ok ? "good" : "bad"}">${r.ok ? "All streams verify: every entry hash recomputes, every checkpoint root, signature and anchor token check out." : "VERIFICATION FAILED: the archive does not match its signed checkpoints."} <span class="muted">(${t(r.verified_at)})</span></div>` +
-    r.streams.map((s) => `<div class="stream ${s.ok ? "good" : "bad"}"><b>${esc(s.stream_id)}</b> · ${s.events} events · ${s.checkpoints} checkpoints · anchored through seq ${s.anchored_through_seq}${s.problems.map((p) => `<div class="problem">seq ${p.seq ?? "-"} ${p.event_id ? esc(p.event_id) : esc(p.checkpoint_id ?? "")}: ${esc(p.kind)} — ${esc(p.detail)}</div>`).join("")}</div>`).join("");
+    `<div class="notice ${r.ok ? "good" : sum.unexpected === 0 ? "warn" : "bad"}">${headline} <span class="muted">(${t(r.verified_at)})</span></div>` +
+    r.streams
+      .map((s) => {
+        const trunc = s.truncated_before_seq ? `<div class="problem">archive on disk starts at seq ${s.first_seq_on_disk}: records 1-${s.truncated_before_seq - 1} are missing</div>` : "";
+        const probs = s.problems.map((p) => `<div class="problem ${p.expected ? "expected" : ""}"><b>${p.expected ? "expected" : "investigate"}</b> · seq ${p.seq ?? "-"} ${p.event_id ? esc(p.event_id) : esc(p.checkpoint_id ?? "")}: ${esc(p.kind)} — ${esc(p.detail)}<div class="cause">${esc(p.cause)}</div></div>`).join("");
+        return `<div class="stream ${s.ok ? "good" : s.problems.every((p) => p.expected) ? "warn" : "bad"}"><b>${esc(s.stream_id)}</b> · ${s.events} events on disk · ${s.checkpoints} checkpoints · anchored through seq ${s.anchored_through_seq}${trunc}${probs}</div>`;
+      })
+      .join("");
 }
 $("#btn-verify").onclick = verify;
 $("#btn-checkpoint").onclick = async () => {

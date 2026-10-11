@@ -70,7 +70,11 @@ html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.
 .integrity .stream { border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin-bottom: 8px; background: var(--panel-2); }
 .integrity .stream.bad { border-color: var(--bad); }
 .integrity .stream.good { border-color: var(--good); }
+.integrity .stream.warn { border-color: #d29922; }
 .integrity .problem { color: var(--bad); font-family: var(--mono); font-size: 11px; margin-top: 4px; }
+.integrity .problem.expected { color: #d29922; }
+.integrity .problem .cause { color: var(--muted); font-family: inherit; margin-left: 12px; }
+.notice.warn { border-color: #d29922; }
 .identity { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .identity .link { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; font-size: 11px; }
 .identity .link b { display: block; color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; }

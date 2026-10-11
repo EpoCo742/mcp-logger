@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import { createServer } from "node:net";
 import { AgentRuntime } from "./agent-runtime/runtime.js";
 import { startAgentRuntime } from "./agent-runtime/server.js";
 import { startAuditPlane } from "./audit-plane/server.js";
@@ -45,6 +46,26 @@ function mountDemo(app: Express) {
   });
 }
 
+/**
+ * Refuse to start if any demo port is already taken. This runs before the store is
+ * constructed, so a second `npm run demo` can never wipe the archive of a demo that
+ * is still running: it exits here without touching data/.
+ */
+async function assertPortsFree(ports: Record<string, number>): Promise<void> {
+  for (const [name, port] of Object.entries(ports)) {
+    const free = await new Promise<boolean>((resolve) => {
+      const probe = createServer();
+      probe.once("error", () => resolve(false));
+      probe.listen(port, () => probe.close(() => resolve(true)));
+    });
+    if (!free) {
+      console.error(`\nPort ${port} (${name}) is already in use: another demo is probably still running.\nNothing was started and data/ was left untouched. Stop the other demo first, or use its UI at ${URLS.audit}.\n`);
+      process.exit(1);
+    }
+  }
+}
+
+await assertPortsFree(PORTS);
 const store = new AuditStore(!process.argv.includes("--keep"));
 startAuditPlane(store, mountDemo);
 startCoreApis();
@@ -63,4 +84,3 @@ AI Audit Logging POC is running
   Core brokerage APIs     ${URLS.coreApis}
 Run scenarios from the UI or: npm run scenarios
 `);
-void PORTS;

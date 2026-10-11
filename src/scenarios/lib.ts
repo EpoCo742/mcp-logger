@@ -221,9 +221,13 @@ export const SCENARIOS: Scenario[] = [
       log(`verification before: ${before.ok ? "OK" : "PROBLEMS"} across ${before.streams.length} streams`);
       const t = (await (await fetch(`${URLS.audit}/admin/tamper`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })).json()) as { ok: boolean; detail: string; event_id?: string };
       log(`tamper: ${t.detail}`);
-      const after = (await (await fetch(`${URLS.audit}/verify`)).json()) as { ok: boolean; streams: { stream_id: string; ok: boolean; problems: { kind: string; detail: string; seq?: number }[] }[] };
-      for (const s of after.streams.filter((x) => !x.ok)) for (const p of s.problems) log(`  ${s.stream_id} seq ${p.seq ?? "-"}: ${p.kind}: ${p.detail}`);
-      return { summary: after.ok ? "UNEXPECTED: tamper not detected" : `Tamper detected: ${after.streams.flatMap((s) => s.problems).length} problems reported.`, details: { tampered_event: t.event_id, verification: after } };
+      const after = (await (await fetch(`${URLS.audit}/verify`)).json()) as { ok: boolean; summary: { problems: number; expected: number; unexpected: number }; streams: { stream_id: string; ok: boolean; problems: { kind: string; detail: string; seq?: number; expected: boolean; cause: string }[] }[] };
+      for (const s of after.streams.filter((x) => !x.ok)) for (const p of s.problems) log(`  ${p.expected ? "expected" : "INVESTIGATE"} ${s.stream_id} seq ${p.seq ?? "-"}: ${p.kind}: ${p.detail}`);
+      const { expected, unexpected } = after.summary;
+      return {
+        summary: after.ok ? "UNEXPECTED: tamper not detected" : `Tamper detected: ${expected} expected finding(s) from the simulated edit${unexpected ? `; ${unexpected} other finding(s) need investigation` : ""}.`,
+        details: { tampered_event: t.event_id, verification: after },
+      };
     },
   },
 ];
