@@ -86,7 +86,16 @@ html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.
 .event.EP2 { border-left-color: var(--ep2); }
 .event.EP3 { border-left-color: var(--ep3); }
 .event.EP4 { border-left-color: var(--ep4); }
+.event { transition: border-color 0.12s; }
+.event:hover { border-color: var(--accent); }
 .event .head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.event .summary { cursor: pointer; }
+.event .chev { display: inline-block; width: 12px; color: var(--accent); font-size: 12px; transition: transform 0.15s; }
+.event.open .chev { transform: rotate(90deg); }
+.event .hint { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.event .hint::before { content: "click to expand"; }
+.event.open .hint::before { content: "click to collapse"; }
+.event:hover .hint { color: var(--accent); border-color: var(--accent); }
 .event .ep { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: var(--panel); }
 .event .type { font-weight: 600; }
 .event .step { color: var(--muted); font-family: var(--mono); font-size: 11px; }

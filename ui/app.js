@@ -169,7 +169,7 @@ function renderDetail(d) {
   const actions = `<div class="detail-actions"><span class="mono muted">${esc(d.interaction_id)}</span><button class="btn small" id="btn-export">Export with proofs</button></div><div id="export-result"></div>`;
   const tl = events
     .map(
-      (e) => `<div class="event ${e.emitter.point} ${state.openEvents.has(e.event_id) ? "open" : ""}" data-ev="${e.event_id}"><div class="head"><span class="ep">${e.emitter.point}</span><span class="type">${esc(e.event_type)}</span><span class="step">step ${e.spine.step_seq}</span><span class="time">${t(e.occurred_at)}</span></div>
+      (e) => `<div class="event ${e.emitter.point} ${state.openEvents.has(e.event_id) ? "open" : ""}" data-ev="${e.event_id}"><div class="head" title="Click to expand or collapse this event"><span class="chev" aria-hidden="true">▸</span><span class="ep">${e.emitter.point}</span><span class="type">${esc(e.event_type)}</span><span class="step">step ${e.spine.step_seq}</span><span class="time">${t(e.occurred_at)}</span><span class="hint"></span></div>
       <div class="summary">${esc((EP_SUMMARY[e.event_type] ?? ((p) => JSON.stringify(p).slice(0, 120)))(e.payload))}</div><div class="body">${renderBody(e)}</div></div>`,
     )
     .join("");
@@ -190,7 +190,7 @@ $("#detail-body").addEventListener("click", async (e) => {
     document.getElementById(`reveal-${rev}`).innerHTML = r.ok ? `<div class="notice good mono">${esc(JSON.stringify(r.revealed))} (access logged)</div>` : `<div class="notice bad">${esc(r.error)}</div>`;
     return;
   }
-  const head = e.target.closest(".head");
+  const head = e.target.closest(".head, .summary");
   if (!head) return;
   const card = head.closest(".event");
   card.classList.toggle("open");
